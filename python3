@@ -1,0 +1,201 @@
+59-3
+身份操作符：
+l1 == l2 对象值的比较
+l1 is|is not l2 等同于id(l1) is id(l2)，表达是否是同一个对象,即是否同一个内存地址---仔细理解  
+type(l1) is type(l2) 对象所属类型的比较
+
+案例：
+>>> a=[1,2,3]
+>>> id(a) 此时查看的是变量名a的内存标识符，或者说对象引用a的内存标识符
+140336824865992
+>>> id(a[0])  此时查看的a[0]这个数据项的内存标识符
+224936779776
+
+in |in not，用于检测某一个值是否在序列中
+
+比较操作符：
+  < > >= <= != == 
+成员操作符：
+  in 或者not in，测试成员关系
+逻辑操作符：
+    & | 表示按位与，按位或
+    and，or，not表示逻辑与，或，非
+
+
+流程控制：
+if语句的基本结构1
+   if boolexpre1:(必须加冒号）
+        suite1
+   else:(必须加冒号）
+        suite2
+if语句的基本结构2
+   if boolexpre1:
+        suite1
+   elif boolexpre2:
+        suite2
+   ....
+   else:
+       suite3
+if语句的基本结构3
+   if boolexpre1:
+        suite1
+三元表达式：expre1 if boolexpre else expre2 如果boolexpre为真，就执行expre1，否则执行expre2
+
+while语句
+    while boolexpre1:
+        suite1
+   else:      这个else只在while正常终止时才会执行
+        suite1
+while案例：
+>>> sum=0 必须要先定义好sum和i，否则会报错
+>>> i=1
+>>> while i <= 100:
+...     sum +=i
+...     i +=1
+... else:
+...     print(sum)
+...
+5050
+
+for语句
+    for expr in iter：
+        suite1
+    else:
+        suite1
+
+案例：while循环，重点是else的含义，
+>>> i=0
+>>> sum=0
+>>> while i<=100:
+...   sum +=i缩进必须相同
+...   i +=1
+... else:（只有在i<=100表达式为false时，执行一次else，此处的else必须和while对齐）
+...   print(sum)
+...   此处敲enter键
+5050
+
+
+案例：for循环
+>>> for i in range(1,10,2): step写在最后面，2即表示step
+...    print(i)
+...
+1
+3
+5
+7
+9
+break和continue的语句：
+    if boolexpr:break
+    if boolexpr:continue
+python2中：
+    range:一次性返回连续的整数列表
+    xrange：一次产生一个数据元素，比range更节约内存空间
+python3中：
+    range和xrange已不做区分，range就表示一次产生一个数据元素
+
+
+迭代，列表生成式，生成器，迭代器的解释：
+1）可迭代对象包括序列，非序列，自定义，但是可迭代对象不能直接使用next方法，比如一个字符串就不能直接使用next方法，需要使用iter（）转换为迭代器后才可以使用
+2）迭代器又叫游标，迭代器定义了遍历集体中每一个元素的顺序和方法
+3）使用iter()函数可以从任何序列中获得迭代器，如果需要获取迭代器中的元素，可以使用next方法
+4）凡是可作用于for循环的对象都是Iterable类型；
+5）凡是可作用于next()函数的对象都是Iterator类型，它们表示一个惰性计算的序列；
+6）集合数据类型如list、dict、str等是Iterable但不是Iterator，不过可以通过iter()函数获得一个Iterator对象。
+7）Python的for循环本质上就是通过不断调用next()函数实现的
+8）可以直接作用于for循环的数据类型有以下几种：
+   一类是集合数据类型，如list、tuple、dict、set、str等；一类是generator，包括生成器和带yield的generator function。
+   这些可以直接作用于for循环的对象统称为可迭代对象：Iterable。
+   可以被next()函数调用并不断返回下一个值的对象称为迭代器：Iterator   
+
+案例：使用isinstance()判断一个对象是否是Iterable对象
+>>> from collections import Iterable
+>>> isinstance([], Iterable)
+True
+>>> isinstance({}, Iterable)
+True
+>>> isinstance('abc', Iterable)
+True
+>>> isinstance((x for x in range(10)), Iterable)
+True
+>>> isinstance(100, Iterable)
+False
+变形的iter案例：
+>>> a='hello'
+>>> reversed(a)
+<reversed object at 0x7f080fed24e0>  其实只要是这种返回元素地址的对象，都可以调用next方法获取元素
+>>> b=reversed(a)
+>>> b
+<reversed object at 0x7f080fecb5f8>
+>>> b.__next__()
+'o'
+>>> b.__next__()
+'l'
+
+iter案例：
+>>> l='hello'
+>>> myiter=iter(l)
+>>> myiter.__next__()
+'h'
+>>>
+>>> myiter.__next__()
+'e'
+
+生成器：表达式对象，它执行的计算同列表解析结果一样，但列表解析会创建出整个列表对象，而生成器则只返回一个生成器对象，它可用于迭代的生成结果，而非一次返回所有结果
+列表解析是python迭代机制的一种应用
+生成器优缺点：
+      优点：一次只返回一个生成结果，节约内存
+      缺点：生成完了就完了，不能重复，所以生成器针对的是元素只被使用一次的场景，如果元素需要被多次使用还是需要列表解析
+列表解析优缺点:
+      优点：产生的结果可以重复使用
+      缺点：一次创建整个列表对象，内存用量大
+
+生成器和列表解析在表达形式上的唯一区别就是一个是[]，一个是()，然后生成器支持next方法
+案例：列表解析,也叫列表生成式
+>>> l1=[x**2 for x in range(10)]  内部是一个表达式
+>>> l1
+[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+>>> l1=[x**2 for x in range(10) if x%2 ==0 ]
+>>> l1 
+[0, 4, 16, 36, 64]
+案例：生成器
+>>> f=(x**2 for x in range(10))        
+>>> f.__next__()
+0
+>>> f.__next__()
+1
+注意区分：迭代器，列表解析，生成器
+
+函数正常要使用return语句，执行返回结果，也可以使用yield，但此时对函数的调用，返回是一个生成器对象，而非函数执行结果
+即在def语句的的主体部分使用了yield，此函数就自动变成了生成器
+最难理解的就是generator和函数的执行流程不一样。函数是顺序执行，遇到return语句或者最后一行函数语句就返回。
+而变成generator的函数，在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行
+案例：在函数的最后面加上yeild就自动变成了生成器
+>>> def f5(n):
+...     for i in range(n):
+...         yield i
+...
+>>> x=f5(5)
+>>> x.__next__()
+0
+>>> x.__next__()
+1
+>>> x.__next__()
+2
+>>> x.__next__()
+3
+>>> x.__next__()
+4
+>>> x.__next__()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+案例：把生成器转换成列表案例
+>>> f=(x**2 for x in range(10))
+>>> l1=list(f)
+>>> print(l1)
+[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+案例：字典推导式
+>>> a={k:k**2 for k in a}
+>>> a
+{1: 1, 2: 4, 3: 9}
+
