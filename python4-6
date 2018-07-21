@@ -4,81 +4,52 @@ python文件对象:任何可以存储在硬盘上的数据都是数据流格式�
 
 读写文件的思想：---重要
 读写文件前，我们先必须了解一下，在磁盘上读写文件的功能都是由操作系统提供的，现代操作系统不允许普通的程序直接操作磁盘，
-所以读写文件就是请求操作系统打开一个文件对象（通常称为文件描述符），然后，通过操作系统提供的接口从这个文件对象中读取数据（读文件），
-或者把数据写入这个文件对象（写文件）
+所以读写文件就是请求操作系统打开一个文件对象,通常称为文件描述符,然后通过操作系统提供的接口从这个文件对象中读取数据,或者把数据写入这个文件对象
 
 help(open) 
 open()用于创建一个文件对象,所以在open函数的左边要使用变量进行对象引用
-  open(pathfile, mode='r', buffering=-1, encoding=None,errors=None, newline=None, closefd=True, opener=None)   pathfile要用引号
-  mode访问模式有如下选项
-  'r'       open for reading (default)
-  'w'       open for writing, truncating the file first 覆盖写，也就是写入的内容会覆盖原有的内容
-  'x'       create a new file and open it for writing
-  'a'       open for writing, appending to the end of the file if it exists 追加写，也就是写入的内容会最加在原有文件的后面
-  'b'       binary mode
-  't'       text mode (default)
-  '+'       open a disk file for updating (reading and writing) 以读写方式打开
-  'U'       universal newline mode (deprecated) 通用换行模式
- 常用mode选项
+open(pathfile, mode='r', buffering=-1, encoding=None,errors=None, newline=None, closefd=True, opener=None)   pathfile要用引号
+常用mode选项
    r   只读
    w   只写，如果文件不存在则创建。而且是覆盖写入
    a   追加写，如果文件不存在则创建
    r+  以读写方式打开文件
    w+  读写方式打开文件，如果文件不存在则创建
    a+  追加打开文件，可读可写，如果文件不存在则创建
-   常用的就是前面6个，建议只使用r或者r+或者a+,w或者w+千万不能用
-   rb
-   wb
-   ab
-   rb+ 以二进制读方式打开，但可以写
-   wb+
-   ab+
+以r或者w打开的文件，文件描述符都在文件开头，但以a打开的文件，文件描述符在文件尾部，也就是此时无法实现读操作
 buffering
     0和小于0的数字都表示禁用缓冲
     1  缓冲1行
     2+ 缓冲所有行
 
-[root@node1 ~]# cp /etc/fstab /tmp 
-[root@node1 ~]# python3
-Python 3.4.5 (default, Jun  1 2017, 13:52:39) 
-[GCC 4.4.7 20120313 (Red Hat 4.4.7-18)] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> f1=open('/tmp/fstab','r') 以读方式打开
->>> for line in f1:
-...     print(line,end=' ')  end表示在每行的最后加空格，因为print函数默认在每行后是新行，help(print)可查看帮助:
-... 
- #
- # /etc/fstab
- # Created by anaconda on Mon May 15 05:49:38 2017
- #
- # Accessible filesystems, by reference, are maintained under '/dev/disk'
- # See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
- #
- UUID=8cb8062f-4d88-445f-98dc-0038d28cca1d /                       ext4    defaults        1 1
- UUID=fe2e3da9-21bc-4fd4-840e-2ddd51060bf7 /boot                   ext4    defaults        1 2
- UUID=18e8cbba-ad10-432f-b12b-5295b12b89df swap                    swap    defaults        0 0
- tmpfs                   /dev/shm                tmpfs   defaults        0 0
- devpts                  /dev/pts                devpts  gid=5,mode=620  0 0
- sysfs                   /sys                    sysfs   defaults        0 0
- proc                    /proc                   proc    defaults        0 0
->>> f1.seek(0,0)
-0
->>> f1.readline() 括号里面可以填数字，表示你想读取到的字符数
-'\n'
->>> f1.readline()
-'#\n'
->>> f1.tell()  查看读取到文件的哪个字节,实际就是文件指针的位置
-3
->>> f1.close() 关闭文件并释放所占有的所有资源，此时就无法读取文件了
+读文件案例：
+]# cat test.txt
+first line
+second line
+third line
+]# cat test4.py
+with open("/Users/chenhao/python/test.txt","r") as f:
+    print(f.read())  #读取全部内容，适用于小文件，文件很大时占用很多内存
+]python3 test4.py
+first line
+second line
+third line
 
-以w，即覆盖读方式打开
->>> f2=open('/tmp/fstab','w')
->>> a='hello world'
->>> f2.write(a)  原有内容被覆盖掉了
-11
->>> exit()
-[root@node1 ~]# cat /tmp/fstab 
-hello world  如果cat没有出现内容，回到python中执行f2.flush()
+]# cat test4.py
+with open("/Users/chenhao/python/test.txt","r") as f:
+    print(f.read(5))
+    print(f.read(5))  #每次读取5个字符，第二次读取时从前一次的文件描述符开始，注意文件描述符的变化
+]# python3 test4.py
+first
+ line
+]# with open("/Users/chenhao/python/test.txt","r") as f:
+    print(f.readline()) #一行一行的读取
+    print(f.readline())
+]# python3 test4.py
+first line
+
+second line
+
 
 常用文件方法：
   f1.isatty() 判断f1是否为tty设备
