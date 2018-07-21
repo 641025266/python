@@ -1,0 +1,74 @@
+59-8 有什么用？
+错误有两种类型：
+    语法错误：这是最常见的情况
+    异常：语句或表达式在语法上是正确的，当试图执行它时可能会引发错误。运行期检测到的错误称为异常
+python异常
+  try：
+    except IOErr:  对应的异常类型
+       处理内容
+    except IOErr:
+       处理内容
+    else:
+
+    finally:   不管有没有异常，finall都要执行，一般finall指的关闭文件等
+
+
+案例：python连接mysql案例：
+  service mysqld start 
+  create database testdb
+  grant all on testdb.* to 'python'@'192.168.139.%' identified by 'python'
+  flush privileges
+  pip3  search  mysql-connector|grep mysql-connector
+  pip3  search  PyMySQL|grep PyMySQL
+  pip3 install PyMySQL 安装PyMySQL或mysql-connector都可以，两者使用方法差不多
+
+进入到python的交互式模式
+>>> help('modules') 查看是否有pymysql模块
+>>> import pymysql
+>>> mysql=pymysql.connect(user='python',host='192.168.139.188',port=3306,password='python',database='testdb') 任何赋值语句都会创建类属性,  创建了一个连接对象
+>>> cur=mysql.cursor() 必须要先创建一个游标对象   
+>>> cur.execute('create table tb1(name varchar(30) not null, age int)')
+连接到mysql里面，查看tb1表是否已经生成
+>>> cur.execute('insert tb1 values("obama",50)') 外层用单引号，内层就要用双引号
+>>> mysql.commit()  执行INSERT等操作后一般要调用commit()提交事务，否则后面有可能查询不到数据
+连接到mysql里面，查看tb1表里面是否有数据生成，如果没有数据生成
+>>> cur.execute('select * from testdb.tb1')   读到的数据存放在缓冲区中，需要用cur.fetchone()，或者cur.fetchall()命令从缓冲区中读出来
+3  表示有3行
+>>> cur.fetchone()
+('jerry', 20)
+>>> cur.fetchone()
+('tom', 30)
+>>> cur.fetchone()
+('obama', 50)
+>>> cur.close()   不需要做任何操作后，务必记得关闭游标和连接，确切的说关闭掉创建的对象
+>>> mysql.close() 
+
+
+案例：python使用ssh连接到192.168.139.171，同时上传一个文件
+ssh=paramiko.SSHClient()  先创建一个客户端连接对象
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy)
+ssh.connect(hostname='192.168.139.171', port=22, username='root', password='root@')
+ftp=ssh.open_sftp()
+ftp.put('/etc/fstab','/tmp/fstabx')
+到192.168.139.171主机上查看是否有/tmp/fstabx
+ftp.close() 
+ssh.close() 
+
+把如上交互式命令转换成代码
+vim /root/putfile.py 
+#!/usr/bin/python3.4
+#
+import paramiko
+def putfile(hostname,username,password,localfile,remotefile):
+    ssh=paramiko.SSHClient()  
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname=hostname,username=username, password=password)
+    ftp=ssh.open_sftp()
+    result=ftp.put(localfile,remotefile) 
+    if result:
+       print("putfile %s success" % '/etc/fstab')  print语句与%结合使用，可实现字符串替换功能，%s表示有一个字符串替换，%d表示有一个整型替换，%f表示有一个浮点数替换
+    else:
+       print("putfile %s fail" % '/etc/fstab')
+#ftp.close()
+#ssh.close()  有这两句会报错？
+putfile(hostname='192.168.139.171', username='root', password='root@',localfile='/etc/fstab',remotefile='/tmp/fstaby')

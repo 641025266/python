@@ -1,0 +1,458 @@
+
+59-7 python类---重点
+面向对象编程的核心就是类和类的继承
+OOP：object oriented pragraming，即面向对象编程
+在面向对象编程来看：程序=算法+数据结构
+
+类的核心概念：
+        （1) 类是具有相同属性和相同方法的对象的集合,对象是类的实例
+         (2) 类是一种自定义类型，而实例则是声明某个自定义类型的变量。可以把实例想象成一种新型变量，它保存着数据，但可以对自身的数据执行操作
+         (3) 类体可以包含：声明语句，类成员定义（变量，方法），任何赋值语句都会创建类属性
+        （4）如果不存在继承关系，父类bases可以为空；没有显示指定父类的类，默认有一个父类object
+        （5）类是可执行代码，直到运行后类对象才会存在
+        （6）通过调用类来创建实例instance_name=classname()，每个实例对象都会继承类的变量属性和方法属性，并获得自己的名称空间
+             instance_name.method=classname.method(instance_name),即通过实例来调用方法时，等效于把实例名称作为参数传递给类的方法
+        （7）方法重写：如果从父类继承的方法不能满足派生类的需求，可以使用相同的方法名称来调用父类的方法，这个过程叫方法的覆盖，也称为方法的重写。
+        （8）实例变量：定义在方法中的变量，只作用于当前实例的类
+        （9）继承：即一个派生类继承基类的属性和方法。继承也允许把一个派生类的对象作为一个基类对象对待。
+       （10）类变量：类变量在整个实例化的对象中是公用的。类变量定义在类中且在函数体之外。类变量通常不作为实例变量使用
+       （11）类也是一种对象，类是一种数据结构，在python中所有数据类型都是对象
+       （12）面向对象的编程机制有3个：数据封装，继承，多态。多态的解释，比如都是加法，针对数字，是算术加法，但是针对字符串，是连接功能
+       （13）类对象支持两种操作：属性引用和实例化---重要
+       （14）实例对象唯一可以做的操作就是属性引用，此时有两种有效的属性名称：数据属性和方法--重要
+        (15) 在继承中基类的构造（__init__()方法）不会被自动调用，它需要在其派生类的构造中亲自专门调用----重要
+       （16）Python总是首先查找对应类型的方法，如果它不能在派生类中找到对应的方法，它才开始到基类中逐个查找
+
+类的数据成员和方法：
+    数据成员：成员变量和实例变量，数据也称为变量；数据成员也可以理解为属性；也可以理解为数据成员=变量=属性
+        方法：用于操作变量的代码，用于定义如何使用变量，因此一个类的接口和行为是通过方法来定义的；也可以理解为方法=函数
+
+基于以上描述，类可以理解为封装了变量和可用于该变量的方法
+方法和变量：
+    私有：内部可用
+    公共：外部可见
+
+类的创建
+  class classname(object):             如果有继承，object就修改为父类，如果没有合适的继承类，就使用object类，这是所有类最终都会继承的类
+        'class documentation string'   表示类文档
+         data = value                  定义变量属性，也就是数据属性
+         def method(self,..):          定义方法属性
+             self.member = value   
+
+案例:类的说明
+class Student(object):
+    def __init__(self, name, score):  __init__方法的第一个参数永远是self，表示创建的实例本身
+        self.name = name
+        self.score = score
+    def print_score(self):    封装数据的函数是和Student类本身是关联起来的，我们称之为类的方法
+        print('%s: %s' % (self.name, self.score))
+>>> bart = Student('Bart Simpson', 59)
+>>> bart.name
+'Bart Simpson'
+>>> bart.score
+59
+
+类的内置变量：也就是任何一个类都存在的变量，用户创建类时没有进行指定也是存在的
+对象名.__dict__可以查看类的数据属性，以字典形式显示出来
+对象名.__name__  查看类classname的名字
+对象名.__doc__   查看类classname的文档，以字符串形式显示出来
+对象名.__bases__ 查看类classname的父类，以元组形式显示出来
+对象名.__module__查看类classname定义所在处的模块（类的全名是'__main__.classname'，如果类位于一个导入模块mymod中，那么classname.__module__等于 mymod）
+instancename.__class__ 实例instancename对应所在的类
+以上classname有的时候也可以修改为instancename
+
+__foo__: 头尾双下划线,系统定义的系统变量，用来区别其他用户自定义的命名，类似__init__()方法之类的
+   _foo: 单下划线开头,表示的是protected 类型的变量，即保护类型只能允许其本身与子类进行访问，不能用于from module import *
+         单下划线实例变量外部是可以访问的，但是约定俗成把这种变量看成私有变量，所以不要随意访问
+  __foo: 双下划线开头,表示的是私有类型(private)的变量,是类的本地变量，只能是允许这个类本身进行访问了
+
+案例：__dict__是以字典形式把对象的所有数据属性显示出来
+>>> class Student(object):
+...     def __init__(self, name, age, score):
+...         self.name = name
+...         self.age = age
+...         self.score = score
+...
+>>>
+>>> s = Student('Bob', 20, 88)
+>>> s.__dict__
+{'name': 'Bob', 'age': 20, 'score': 88}
+案例：要获得一个对象的所有属性和方法，可以使用dir()函数
+>>> a='abc'
+>>> dir(a)
+['__add__', '__class__', '__contains__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__mod__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmod__', '__rmul__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'capitalize', 'casefold', 'center', 'count', 'encode', 'endswith', 'expandtabs', 'find', 'format', 'format_map', 'index', 'isalnum', 'isalpha', 'isdecimal', 'isdigit', 'isidentifier', 'islower', 'isnumeric', 'isprintable', 'isspace', 'istitle', 'isupper', 'join', 'ljust', 'lower', 'lstrip', 'maketrans', 'partition', 'replace', 'rfind', 'rindex', 'rjust', 'rpartition', 'rsplit', 'rstrip', 'split', 'splitlines', 'startswith', 'strip', 'swapcase', 'title', 'translate', 'upper', 'zfill']
+
+案例：getattr()获取类的属性；setattr()设置类的属性；hasattr()测试类是否有某一个属性
+>>> class MyObject(object):
+...     def __init__(self):
+...         self.x = 9
+...     def power(self):
+...         return self.x * self.x
+...
+>>> obj = MyObject()
+>>> hasattr(obj, 'x')  测试obj是否有属性x
+True
+>>> obj.x
+9
+>>> getattr(obj, 'x') 两种获取属性x的方法 
+9
+>>> setattr(obj, 'y', 19) # 设置一个属性'y'
+>>> hasattr(obj, 'y') # 有属性'y'吗？
+True
+说明：
+  假设我们希望从文件流fp中读取图像，我们首先要判断该fp对象是否存在read方法，如果存在，则该对象是一个流，如果不存在，则无法读取。hasattr()就派上了用场
+案例：如果要让内部属性不被外部访问，可以把属性的名称前加上两个下划线__，此时变成私有变量，要想访问，在类内部设置访问访问，增加代码的安全性
+class Student(object):
+    def __init__(self, name, score):
+        self.__name = name
+        self.__score = score
+    def print_score(self):
+        print('%s: %s' % (self.__name, self.__score))
+>>> bart = Student('Bart Simpson', 59)
+>>> bart.__name
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'Student' object has no attribute '__name'
+>>> bart.print_score()
+Bart Simpson: 59
+案例：单下划线和双下划线变量的使用
+>>> class MyClass():
+...     def __init__(self):
+...             self.__superprivate = "Hello"
+...             self._semiprivate = ", world!"
+...
+>>> mc = MyClass()
+>>> print mc.__superprivate
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: myClass instance has no attribute '__superprivate'
+>>> print mc._semiprivate 单下划线变量外部可以访问，但是不建议这么做
+, world!
+>>> print mc.__dict__
+{'_MyClass__superprivate': 'Hello', '_semiprivate': ', world!'}
+
+案例：给实例动态增加属性或者方法，但此时对其他实例没有作用，只有在类中定义的属性或者方法对所有实例有作用
+>>> class student(object):
+...     pass
+...
+>>> s=student()
+>>> s.name='jerry'
+>>> s.name
+'jerry'
+案例：只允许对Student实例添加name和age属性，定义一个特殊的__slots__变量，来限制该class实例能添加的属性
+>>> class students1(object):
+...    __slots__=('name','age')
+...
+>>> a=students1()
+>>> a.name='mark'
+>>> a.name
+'mark'
+>>> a.score=90 定义其他属性时就报错
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'students1' object has no attribute 'score'
+__slots__定义的属性仅对当前类实例起作用，对继承的子类是不起作用的，除非在子类中也定义__slots__
+
+案例：
+a变量是一个类变量，它的值将在这个类的所有实例之间共享。你可以在内部类或外部类使用访问。
+第一种方法__init__()方法是一种特殊的方法，被称为类的构造函数或初始化方法，当创建了这个类的实例时就会调用该方法，但是在类的继承中不会自动调用--重要
+self代表类的实例，self在定义类的方法时是必须有的，虽然在调用时不必传入相应的参数。self代表类的实例，而非类---仔细理解
+类的方法与普通的函数只有一个特别的区别，它们必须有一个额外的第一个参数名称, 按照惯例它的名称是 self。
+
+[root@localhost ~]# vim /root/test1.py
+#!/usr/bin/python3
+#
+class price:
+      a = 0
+      def __init__(self):
+          self.price = 100
+          self.count = 0.7
+      def newprice(self):
+          new_price = self.price*self.count
+          print(new_price)
+p=price()    此处必须加括号，表示创建实例
+p.newprice() 此处必须加括号，表示调用实例的方法
+print(p.a)   调用实例的数据属性
+[root@localhost ~]# python3 test1.py 
+70.0
+0
+
+案例：从执行结果可以很明显的看出，self代表的是类的实例，代表当前对象的地址，而self.class则指向实例所在类。
+[root@localhost ~]# vim /root/test4.py
+#!/usr/bin/env python
+#coding=utf-8
+class test():
+      def a(self):
+          print(self)
+          print(self.__class__)
+t=test()
+t.a()
+[root@localhost ~]# python3 /root/test4.py 
+<__main__.test object at 0x7f831aa7fa20>
+<class '__main__.test'>
+
+
+案例：实例的初始化__init__只有在第一次调用时执行，后续都不会执行了
+[root@localhost ~]# vim /root/test5.py
+#!/usr/bin/env python
+#coding=utf-8
+class father():
+      a = 100
+      def __init__(self):
+          print("i am father")
+      def fathermethod(self):
+          print("i am fathermethod")
+      def setfa(self):
+          father.fathermethod()
+class son(father):
+      def __init__(self):
+          print("i am son")
+      def sonmethod(self):
+          print("i am sonmethod")
+s=son()
+s.fathermethod()  
+s.sonmethod()
+[root@localhost ~]# python3 test5.py 
+i am son
+i am fathermethod
+i am sonmethod
+
+案例:方法重写
+[root@localhost ~]# vim /root/test6.py
+#!/usr/bin/env python
+#coding=utf-8
+class father:
+      a=100
+      def __init__(self):
+            print("i am father")
+      def fathermethod(self):
+            print("i am fathermethod")
+class son(father):  如果派生类中自己没有__init__做初始化，则在第一次调用时，会使用基类的初始化
+       def fathermethod(self):
+            print("i am big boy")
+s=son()
+s.fathermethod()
+[root@localhost ~]# python3 /root/test6.py 
+i am father
+i am big boy
+
+
+案例：类的继承
+vi  /root/test.py
+#! /usr/bin/python3
+#coding=utf-8
+
+class parent:
+      parentattr=1000
+      def __init__(self):
+           print('调用父类构造函数')
+      def parentmethod(self):
+           print('调用父类方法')
+      def setattr(self,attr):
+           parent.parentattr=attr
+      def getattr(self):
+           print('parent.parentattr is {0}'.format(parent.parentattr))
+
+class child(parent):
+      def __init__(self):
+          print('调用子类构造函数')
+      def childmethod(self):
+          print('调用子类方法')
+
+In [2]: import test
+In [5]: a=test.parent()
+调用父类构造函数
+
+In [6]: a.parentmethod()
+调用父类方法
+
+In [7]: a.getattr()
+parent.parentattr is 1000
+
+In [8]: a.setattr(500)
+
+In [9]: a.getattr()
+parent.parentattr is 500
+
+In [10]: b=test.child()
+调用子类构造函数
+
+In [11]: b.childmethod()
+调用子类方法
+
+In [12]: b.parentmethod() 证明了子类可以调用父类的方法，也就是实现了继承
+调用父类方法
+
+In [13]: b.getattr()  由于对象a调用setattr方法把parent.parentattr属性修改为500了，所以此处也跟着被改变了
+parent.parentattr is 500
+
+注意：如果child代码修改为
+  class child(parent):
+      def __init__(self):
+          parent()
+          print('调用子类构造函数')
+      def childmethod(self):
+          print('调用子类方法')
+
+则
+In [10]: b=test.child()   再次证明父类的__init__方法在子类的继承中不会调用，只有子类显示调用时才起作用
+调用父类构造函数
+调用子类构造函数
+
+总结：
+   如果子类中没有__init__方法，则子类就继承父类的__init__方法。
+   如果子类中有自己的__init__方法，就使用自己__init__方法。此时要使用父类的__init__方法，就需要显示的调用
+
+
+案例：类的公共变量与私有变量
+]# vi  test.py
+#! /usr/bin/python3
+#coding=utf-8
+
+class parent:
+      parentattr=1000  类的公共变量
+      __sex='man'      类的私有变量
+      def __init__(self):
+           print('调用父类构造函数')
+      def parentmethod(self):
+           print('调用父类方法')
+      def setattr(self,attr):
+           parent.parentattr=attr
+      def getattr(self):
+           print('parent.parentattr is {0}'.format(parent.parentattr))
+
+class child(parent):
+      def childmethod(self):
+          print('调用子类方法')
+>>> import  test
+>>> a=test.child()
+调用父类构造函数
+>>> a._parent__sex  通过这种方式可以访问类的私有变量
+'man'
+说明：a.加tab键后可以显示出a支持的所有属性和变量，只要没有在这里面列出的就都是不支持的，所以不能使用a.__sex，要使用a._parent__sex
+
+
+案例：类的简单使用
+>>> class nihao():
+...     'my doc'
+...     pass 
+... 
+>>> 
+>>> nihao.__doc__
+'my doc'
+案例:可以给实例传递一个参数
+>>> class nihao:
+...     'my doc'
+...     gender='man'
+...     def setinfo(self,who):   此时类中没有定义__init__()方法，实例创建之初只是一个简单的名称空间
+...         self.name=who
+... 
+>>> x=nihao()
+>>> x.gender 
+'man'
+>>> x.setinfo('jerry') 
+>>> x.name 
+'jerry
+
+
+案例:类的简单使用
+#!/usr/bin/python3
+#
+class myclass:
+      def h(self):
+          print('hello')
+
+x=myclass() 如下两处必须加括号
+x.h()  
+
+
+18）类变量和实例变量，类变量就是供类使用的变量,实例变量就是供实例使用的。考察点实际和上一个案例一样
+[root@localhost ~]# vim  /root/test11.py
+#!/usr/bin/python
+#
+class Person:
+    name="aaa"
+p1=Person()
+p2=Person()
+p1.name="bbb"
+print(p1.name)
+print(p2.name)
+print(Person.name)
+[root@localhost ~]# python3 /root/test11.py
+bbb
+aaa
+aaa
+
+这里p1.name="bbb"是实例调用了类变量,这其实和上面第一个问题一样,就是函数传参的问题,p1.name一开始是指向的类变量name="aaa",但是在实例的作用域里把类变量的引用改变了,
+就变成了一个实例变量,self.name不再引用Person的类变量name了
+
+class Person:
+    name=[]
+p1=Person()
+p2=Person()
+p1.name.append(1)
+print p1.name  # [1]
+print p2.name  # [1]
+print Person.name  # [1]
+
+案例：面向对象编程的经典用法,包括类变量，对象变量，静态函数都涉及到了
+类里面包含字段和方法
+字段也就是变量，分为类变量和对象变量
+方法实际就是函数，就是以def开头定义的函数
+]# cat test1.py
+# coding=UTF-8
+class Robot:
+    #如下是类文档，Robot.__doc__来查看
+    """表示有一个带有名字的机器人"""
+    # population是一个类变量，用来统计机器人的数量，类变量要定义在函数外面
+    population = 0
+    def __init__(self, name):
+        # 如下是方法的文档，可以使用Robot.say_hi.__doc__来查看
+        """初始化数据"""
+        # 因为name是对象变量，所以引用时使用self.name的形式
+        self.name = name
+        print("(Initializing {})".format(self.name))
+        # 当有人被创建时，机器人的数量增加1，因为population是类变量，所以引用时使用Robot.population的形式
+        Robot.population += 1
+    def die(self):
+        """我挂了"""
+        print("{} is being destroyed!".format(self.name))
+        Robot.population -= 1
+        if Robot.population == 0:
+            print("{} was the last one.".format(self.name))
+        else:
+            print("There are still {:d} robots working.".format(Robot.population))
+    def say_hi(self):
+        """来自机器人的诚挚问候，没问题，你做得到"""
+        print("Greetings, my masters call me {}.".format(self.name))
+    # 在类成员函数前面加上@staticmethod表示静态方法，静态方法就是不需要定义实例即可使用这个方法，而且多个实例共享此静态方法
+    @staticmethod
+    def how_many():
+        """打印出当前的人口数量"""
+        print("We have {} robots.".format(Robot.population))
+
+droid1 = Robot("R2-D2")
+droid1.say_hi()
+Robot.how_many()
+droid2 = Robot("C-3PO")
+droid2.say_hi()
+Robot.how_many()
+print("Robots can do some work here")
+print("Robots have finished their work. So let's destroy them.")
+droid1.die()
+droid2.die()
+Robot.how_many()
+]# python3  test1.py
+(Initializing R2-D2)
+Greetings, my masters call me R2-D2.
+We have 1 robots.
+(Initializing C-3PO)
+Greetings, my masters call me C-3PO.
+We have 2 robots.
+Robots can do some work here
+Robots have finished their work. So let's destroy them.
+R2-D2 is being destroyed!
+There are still 1 robots working.
+C-3PO is being destroyed!
+C-3PO was the last one.
+We have 0 robots.

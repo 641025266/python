@@ -1,0 +1,1211 @@
+59-4 文件对象
+内置函数open
+python文件对象:任何可以存储在硬盘上的数据都是数据流格式，即01010这种格式
+
+读写文件的思想：---重要
+读写文件前，我们先必须了解一下，在磁盘上读写文件的功能都是由操作系统提供的，现代操作系统不允许普通的程序直接操作磁盘，
+所以读写文件就是请求操作系统打开一个文件对象（通常称为文件描述符），然后，通过操作系统提供的接口从这个文件对象中读取数据（读文件），
+或者把数据写入这个文件对象（写文件）
+
+help(open) 
+open()用于创建一个文件对象,所以在open函数的左边要使用变量进行对象引用
+  open(pathfile, mode='r', buffering=-1, encoding=None,errors=None, newline=None, closefd=True, opener=None)   pathfile要用引号
+  mode访问模式有如下选项
+  'r'       open for reading (default)
+  'w'       open for writing, truncating the file first 覆盖写，也就是写入的内容会覆盖原有的内容
+  'x'       create a new file and open it for writing
+  'a'       open for writing, appending to the end of the file if it exists 追加写，也就是写入的内容会最加在原有文件的后面
+  'b'       binary mode
+  't'       text mode (default)
+  '+'       open a disk file for updating (reading and writing) 以读写方式打开
+  'U'       universal newline mode (deprecated) 通用换行模式
+ 常用mode选项
+   r   只读
+   w   只写，如果文件不存在则创建。而且是覆盖写入
+   a   追加写，如果文件不存在则创建
+   r+  以读写方式打开文件
+   w+  读写方式打开文件，如果文件不存在则创建
+   a+  追加打开文件，可读可写，如果文件不存在则创建
+   常用的就是前面6个，建议只使用r或者r+或者a+,w或者w+千万不能用
+   rb
+   wb
+   ab
+   rb+ 以二进制读方式打开，但可以写
+   wb+
+   ab+
+buffering
+    0和小于0的数字都表示禁用缓冲
+    1  缓冲1行
+    2+ 缓冲所有行
+
+[root@node1 ~]# cp /etc/fstab /tmp 
+[root@node1 ~]# python3
+Python 3.4.5 (default, Jun  1 2017, 13:52:39) 
+[GCC 4.4.7 20120313 (Red Hat 4.4.7-18)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> f1=open('/tmp/fstab','r') 以读方式打开
+>>> for line in f1:
+...     print(line,end=' ')  end表示在每行的最后加空格，因为print函数默认在每行后是新行，help(print)可查看帮助:
+... 
+ #
+ # /etc/fstab
+ # Created by anaconda on Mon May 15 05:49:38 2017
+ #
+ # Accessible filesystems, by reference, are maintained under '/dev/disk'
+ # See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+ #
+ UUID=8cb8062f-4d88-445f-98dc-0038d28cca1d /                       ext4    defaults        1 1
+ UUID=fe2e3da9-21bc-4fd4-840e-2ddd51060bf7 /boot                   ext4    defaults        1 2
+ UUID=18e8cbba-ad10-432f-b12b-5295b12b89df swap                    swap    defaults        0 0
+ tmpfs                   /dev/shm                tmpfs   defaults        0 0
+ devpts                  /dev/pts                devpts  gid=5,mode=620  0 0
+ sysfs                   /sys                    sysfs   defaults        0 0
+ proc                    /proc                   proc    defaults        0 0
+>>> f1.seek(0,0)
+0
+>>> f1.readline() 括号里面可以填数字，表示你想读取到的字符数
+'\n'
+>>> f1.readline()
+'#\n'
+>>> f1.tell()  查看读取到文件的哪个字节,实际就是文件指针的位置
+3
+>>> f1.close() 关闭文件并释放所占有的所有资源，此时就无法读取文件了
+
+以w，即覆盖读方式打开
+>>> f2=open('/tmp/fstab','w')
+>>> a='hello world'
+>>> f2.write(a)  原有内容被覆盖掉了
+11
+>>> exit()
+[root@node1 ~]# cat /tmp/fstab 
+hello world  如果cat没有出现内容，回到python中执行f2.flush()
+
+常用文件方法：
+  f1.isatty() 判断f1是否为tty设备
+  f1.open()   以下方法都要在open即打开文件后才可以执行
+  f1.read()
+  f1.close(） 关闭文件  
+  f1.fileno(）返回文件描述符
+  f1.flush()  刷写文件内部的缓冲区，即把缓冲区的内容写到硬盘里面  
+  f1.__next__(）
+  f1.readline(） 一行一行的显示
+  f1.read(）     全部一起显示完 
+  f1.readlines(）全部一起显示完 
+  f1.seek(offset,whence) 在文件中移动指针，从whence指定的位置开始，偏移offset字节。whence的取值有，0表示文件头，1表示当前位置，2表示文件尾
+  f1.write(str）向文件写入数据
+  f1.writelines(seq）向文件写入字符串序列
+
+
+platform模块是表示与平台信息相关的模块
+pip3 install requests
+import requests 这是一个第三方的网络库
+f1=requests.get('http://192.168.139.177/index.html') 相当于获取http://192.168.139.177/index.html保存在f1变量中
+f1.content即可显示出内容
+OS模块--------------------------------------------------------------------------------------  
+  import os
+  help（os）
+  help（os.path） 对路径操作
+  os模块
+     文件处理
+       os.mkfifo()  创建管道文件
+       os.mknod()   创建设备文件
+       os.remove()  移动文件
+       os.rename()
+       os.unlink()  删除符合连接
+       os.stat()
+       os.symlink() 创建符合连接
+       os.utime()   更新访问时间
+       os.tmpfile() 创建临时文件
+       os.walk()    显示出目录下的目录名
+       os.chdir()
+       os.chroot()
+       os.listdir()
+       os.getcwd()  相当于pwd
+       os.mkdir()
+       os.rmdir()
+       os.access()  检验访问权限
+       os.chmod()
+       os.chown()
+       os.umask()
+       os.open()  注意同内置函数open的区别
+       os.read()
+       os.write()
+ os.path：path是os中的一个子模块，os是一个大模块
+       os.path.basename()
+       os.path.dirname()
+       os.path.getatime()
+       os.path.getmtime()
+       os.path.getctime()
+       os.path.exists()
+       os.path.isabs()   判断是否是绝对路径
+       os.path.isdir()   
+       os.path.isfile()
+       os.path.islink()
+       os.path.ismount() 判断是否是挂载点
+       os.path.samefile()
+
+案例1：os的使用
+>>> import os
+>>> os.name
+'posix'
+>>> os.uname()
+posix.uname_result(sysname='Darwin', nodename='chenhaodeMacBook-Pro.local', release='17.0.0', version='Darwin Kernel Version 17.0.0: Thu Aug 24 21:48:19 PDT 2017; root:xnu-4570.1.46~2/RELEASE_X86_64', machine='x86_64')
+>>> os.environ 查看环境变量
+environ({'TERM_SESSION_ID': 'w0t3p0:3A100510-BAE0-4C63-B7FC-27DDB58DCE53' ...............
+>>> os.environ.get('TERM_SESSION_ID')  获取某个环境变量的值
+'w0t3p0:3A100510-BAE0-4C63-B7FC-27DDB58DCE53'
+案例2：os的使用
+>>> os.path.abspath('.') 获取当前路径
+'/Users/chenhao'
+>>> os.path.join('/Users/michael', 'testdir')  路径连接
+'/Users/michael/testdir'
+>>> os.mkdir('/Users/chenhao/python')  创建目录
+>>> os.rmdir('/Users/chenhao/python')  删除空目录
+>>> os.path.split('/Users/michael/testdir/file.txt')  拆分路径
+('/Users/michael/testdir', 'file.txt')
+>>> [x for x in os.listdir('.') if os.path.isdir(x)]  查看当前目录下面的所有目录
+['.config', 'Music', 'tokudb-backup-plugin', '.docker', '.vim', 'test', '.sogouinput', 'deploy', 'Pictures', 'tokudb-xtrabackup', '.bundle', 'Desktop', 'Library', '.ShadowsocksX-NG', '.npminstall_tarball', 'Public', 'open-falcon-docker', 'gw', '.ssh', 'Movies', 'Applications', '.Trash', 'trade_deploy', '.npm', 'capistrano', 'Documents', 'dragonfishWeb', '.gem', '.oh-my-zsh', 'Downloads']
+>>> [x for x in os.listdir('.') if os.path.isfile(x) and os.path.splitext(x)[1]=='.py']  查看当前目录下面的所有python文件
+['t1.py']
+>>> os.path.splitext('t1.py')  假设当前目录下面有一个t1.py文件，此命令可以查看扩展名
+('t1', '.py')  返回的是元组
+
+案例：列举当前目录以及所有子目录下的文件，并打印出绝对路径
+>>> import os
+>>> for root,dirs,files in os.walk('./test'):
+...      print(root,dirs,files)
+...
+./test ['testdir'] ['p5.png', 'p4.png']  表示./test目录下面的目录和文件
+./test/testdir [] ['p2.png', 'p1.png']   表示./test/testdir目录下面没有子目录，但有文件
+>>> for root,dirs,files in os.walk('./test'):
+...     for name in files:
+...         print(os.path.join(root,name))
+...
+./test/p5.png  显示绝对路径
+./test/p4.png
+./test/testdir/p2.png
+./test/testdir/p1.png
+
+线程和进程介绍：
+很多同学都听说过，现代操作系统比如Mac OS X，UNIX，Linux，Windows等，都是支持“多任务”的操作系统。
+什么叫“多任务”呢？简单地说，就是操作系统可以同时运行多个任务。打个比方，你一边在用浏览器上网，一边在听MP3，一边在用Word赶作业，这就是多任务，
+至少同时有3个任务正在运行。还有很多任务悄悄地在后台同时运行着，只是桌面上没有显示而已。
+现在，多核CPU已经非常普及了，但是，即使过去的单核CPU，也可以执行多任务。由于CPU执行代码都是顺序执行的，那么，单核CPU是怎么执行多任务的呢？
+答案就是操作系统轮流让各个任务交替执行，任务1执行0.01秒，切换到任务2，任务2执行0.01秒，再切换到任务3，执行0.01秒……这样反复执行下去。
+表面上看，每个任务都是交替执行的，但是，由于CPU的执行速度实在是太快了，我们感觉就像所有任务都在同时执行一样。
+真正的并行执行多任务只能在多核CPU上实现，但是，由于任务数量远远多于CPU的核心数量，所以，操作系统也会自动把很多任务轮流调度到每个核心上执行。
+对于操作系统来说，一个任务就是一个进程（Process），比如打开一个浏览器就是启动一个浏览器进程，打开一个记事本就启动了一个记事本进程，
+打开两个记事本就启动了两个记事本进程，打开一个Word就启动了一个Word进程。
+有些进程还不止同时干一件事，比如Word，它可以同时进行打字、拼写检查、打印等事情。在一个进程内部，要同时干多件事，就需要同时运行多个“子任务”，
+我们把进程内的这些“子任务”称为线程（Thread）。
+由于每个进程至少要干一件事，所以，一个进程至少有一个线程。当然，像Word这种复杂的进程可以有多个线程，多个线程可以同时执行，多线程的执行方式和多进程是一样的，
+也是由操作系统在多个线程之间快速切换，让每个线程都短暂地交替运行，看起来就像同时执行一样。当然，真正地同时执行多线程需要多核CPU才可能实现。
+我们前面编写的所有的Python程序，都是执行单任务的进程，也就是只有一个线程。如果我们要同时执行多个任务怎么办？
+
+有两种解决方案：
+一种是启动多个进程，每个进程虽然只有一个线程，但多个进程可以一块执行多个任务。
+还有一种方法是启动一个进程，在一个进程内启动多个线程，这样，多个线程也可以一块执行多个任务。
+当然还有第三种方法，就是启动多个进程，每个进程再启动多个线程，这样同时执行的任务就更多了，当然这种模型更复杂，实际很少采用。
+总结一下就是，多任务的实现有3种方式：
+多进程模式；也就是一个进程只有一个线程，只能干一个任务
+多线程模式；也就是一个进程有多个线程，一个线程可以干多个任务
+多进程+多线程模式。
+同时执行多个任务通常各个任务之间并不是没有关联的，而是需要相互通信和协调，有时，任务1必须暂停等待任务2完成后才能继续执行，有时，任务3和任务4又不能同时执行，
+所以，多进程和多线程的程序的复杂度要远远高于我们前面写的单进程单线程的程序。
+因为复杂度高，调试困难，所以，不是迫不得已，我们也不想编写多任务。但是，有很多时候，没有多任务还真不行。想想在电脑上看电影，就必须由一个线程播放视频，
+另一个线程播放音频，否则，单线程实现的话就只能先把视频播放完再播放音频，或者先把音频播放完再播放视频，这显然是不行的。
+Python既支持多进程，又支持多线程，我们会讨论如何编写这两种多任务程序。
+小结
+线程是最小的执行单元，而进程由至少一个线程组成。如何调度进程和线程，完全由操作系统决定，程序自己不能决定什么时候执行，执行多长时间。
+多进程和多线程的程序涉及到同步、数据共享的问题，编写起来更复杂。
+
+案例：创建子进程，这和在命令行执行nslookup www.python.org看到的效果是一样的
+]# vi t1.py
+#!/usr/local/bin/python3
+import subprocess
+r = subprocess.call(['nslookup', 'www.python.org'])
+print('Exit code:', r)
+]# python3 t1.py
+Server:		211.162.66.66
+Address:	211.162.66.66#53
+
+Non-authoritative answer:
+www.python.org	canonical name = python.map.fastly.net.
+Name:	python.map.fastly.net
+Address: 151.101.24.223
+Exit code: 0
+
+
+序列化介绍：
+我们把变量从内存中变成可存储或传输的过程称之为序列化，在Python中叫pickling，在其他语言中也被称之为serialization，marshalling，flattening等等，都是一个意思。
+序列化之后，就可以把序列化后的内容写入磁盘，或者通过网络传输到别的机器上。反过来，把变量内容从序列化的对象重新读到内存里称之为反序列化，即unpickling。
+Python提供了pickle模块来实现序列化，持久存储必须依赖于数据序列化
+数据序列化即数据扁平化，把比基于类型的更复杂的对象转换成二进制数据集合以便其可以保存起来或者通过网络发送，而且在需要时，可以还原成原来的对象格式
+常用的数据序列化工具有：
+   pkckle,marshal
+   dbhash/dbm/gdbm
+   shelve
+
+59-5
+[root@node1 ~]# python3.4 
+>>> f1=open('/var/log/httpd/access_log','r').readlines() 直接引用了列表的方法
+>>> f1 
+['192.168.139.188 - - [17/Jul/2017:05:09:56 +0800] "GET / HTTP/1.1" 200 12 "-" "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18 libssh2/1.4.2"\n', '192.168.139.188 - - [17/Jul/2017:05:09:58 +0800] "GET / HTTP/1.1" 200 12 "-" "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18 libssh2/1.4.2"\n', '192.168.139.171 - - [17/Jul/2017:05:10:10 +0800] "GET / HTTP/1.1" 200 12 "-" "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18 libssh2/1.4.2"\n', '192.168.139.171 - - [17/Jul/2017:05:10:11 +0800] "GET / HTTP/1.1" 200 12 "-" "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18 libssh2/1.4.2"\n']             
+>>> ips={}  先定义一个空字典
+>>> for i in f1[0:]:       也可以修改为for i in f1：
+...     ip=i.split(" ")[0] 以空格为分隔符，取出[0]元素
+...     if 7 <= len(ip) <=15: len（）判断对象的bit位数，0.0.0.0就是7位，正常的xxx.xxx.xxx.xxx就是15位
+...        ips[ip]=ips.get(ip,0)+1 计算元素的个数
+...        
+... 
+>>> print(ips)
+{'192.168.139.171': 2, '192.168.139.188': 2}          
+>>> help(ips.get) 
+Help on built-in function get:
+get(...) method of builtins.dict instance
+    D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.  实际上就是三元表达式，如果k在D里面，就执行D[k]对应的值，否则执行D[k]=0
+
+把如上命令写成python脚步
+]# vim /root/httpdlog.py
+#!/usr/bin/python3.4
+#
+ips={}
+log=open('/var/log/httpd/access_log','r').readlines()
+for i in log:
+   ip=i.split(" ")[0]
+   if 7 <= len(ip) <=15:
+      ips[ip]=ips.get(ip,0)+1
+print(ips)
+]# chmod +x /root/httpdlog.py
+]# /root/httpdlog.py
+{'192.168.139.171': 2, '192.168.139.188': 2}
+用awk来表达的方式就是awk -v FS=" " '{ip[$1]++}END{for(i in ip){print i,ip[i]}}' /var/log/httpd/access_log 
+
+python有4种函数
+   全局函数：定义在模块中
+   局部函数: 嵌套在其他函数中
+   lambda函数：表达式，实际就是匿名函数
+   方法：与特定数据类型关联的函数，并且只能与特定数据类型关联一起使用。因为方法属于类型，所以肯定要和类型关联起来
+函数的定义
+  def functionname(parameters):
+          suite（函数内容）
+每个python函数都有一个返回值，默认是none，也可以使用return value明确定义返回值，可以使用return value1 value2来同时返回多个值
+def语句会创建一个函数对象，并同时创建一个指向函数的对象引用，函数也是对象
+
+变量的作用域：
+   函数定义了本地作用域
+   模块定义了全局作用域，每个模块（模块就是一个python代码文件）都是一个全局作用域，因此全局作用域的范围仅限于单个模块文件内
+   每次对函数的调用都会创建一个新的本地作用域，赋值的变量除非声明了全局变量，否则默认都是本地变量
+   也可以概括为如下3句话
+   local namespace: 作用范围为当前函数或者类方法
+   global namespace: 作用范围为当前模块
+   build-in namespace: 作用范围为所有模块
+变量名解析法则：
+    LEGB，l是指local，e是指external，g是指global，b是builtin
+    首先是本地，然后是外侧函数，然后是全局，最后是内置，即作用范围越小，优先级越高
+变量除了作用域外，还有生命周期
+
+案例：函数变量作用域区别
+]# vim /root/t3.py
+#!/usr/bin/python3.4
+#
+def f1():
+    test="variable in exter function"
+    def  f2():
+         print(test)
+    f2()
+f1()
+]# chmod +x /root/t3.py
+]# /root/t3.py
+variable in exter function
+
+]# vim /root/t4.py
+#!/usr/bin/python3.4
+#
+def f1():
+    test="variable in exter function"
+    def  f2():
+         test="variable in inter function"
+         print(test)
+    f2()
+f1()
+]# chmod +x /root/t4.py
+]# /root/t4.py   证明了作用范围越小，优先级越高
+variable in inter function
+案例：函数变量作用域，最好不要在函数内使用全局变量
+]# vi  test.py
+def p_num():
+    global num  把函数内的num=8申明为全局变量
+    print(num)  对应的是num=10
+    num=8
+num=10
+p_num()
+print(num)  因为函数内把num申明为全局变量，实际上就是把num=10修改为了num=8，仔细理解
+]# python3 test.py  
+10
+8
+
+课外作业：用python写一个递归函数
+>>> def f6(n):
+...     if n==2:
+...        b=2
+...     else:
+...        b=n*f6(n-1)
+...     return b
+...
+>>> f6(4)
+24
+案例：python3开发学习
+[root@www test]# vim   test4.py
+#!/usr/bin/python3
+import sys
+zero=['1','3','5','6']    此处列表中的数据项必须加引号，因为line定义成了字符串格式，否则后续line +=a会报错
+one=['7','6','8','21']
+two=['11','14','18','33']
+Digits=[zero,one,two]
+digits=sys.argv[1]        因为要读入命令行中的参数，所以必须要有sys.argv，sys.argv含义参照后续sys模块
+row=0
+while row <3:
+    line=''
+    column=0
+    while column < len(digits):
+             number=int(digits[column])
+             digit=Digits[number]
+             a=digit[row]+' ' 这里用空格来隔开
+             line +=a
+             column +=1
+    print(line)
+    row +=1
+[root@www test]# python3 test4.py  210
+11 7 1
+14 6 3
+18 8 5
+
+内置函数zip，接受任意多个（包括0个和1个）序列作为参数，返回一个tuple列表
+>>> b=[1,2,3]
+>>> list(zip(b))
+[(1,), (2,), (3,)]
+>>> c=[4,5,6]
+>>> list(zip(b,c))              此处必须使用list才能正常显示，使用print不能正常显示
+[(1, 4), (2, 5), (3, 6)]
+>>> dict(zip(b,c))
+{1: 4, 2: 5, 3: 6}
+
+参数分为：位置参数，关键字参数，默认参数，可变参数，命名关键字参数
+案例：默认参数必须指向不变对象
+def add_end(L=None):
+    if L is None:
+        L = []
+    L.append('END')
+    return L
+
+案例：可变参数，匹配并收集（在列表或者元组中）所有包含位置的参数
+>>> def f3(*args):    用在定义函数中
+...     print(args)
+... 
+>>> f3(1,2,3)
+(1, 2, 3)
+>>> f3('a','b') 
+('a', 'b')元组格式
+
+案例：关键字参数，匹配并收集（在字典中）所有包含位置的参数
+>>> def f4(**kwargs):  用在定义函数中 
+...     print(args)
+... 
+>>> f4(1,2) 不能使用这种格式传递参数
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: f4() takes 0 positional arguments but 2 were given
+>>> f4(a=1,b=2) 
+{'b': 2, 'a': 1} 字典格式
+
+案例：*args必须在**kwargs前面
+>>> def f(*args,**kwargs):
+...       print(args,kwargs)
+... 
+>>> f(a=1,b=2)
+() {'b': 2, 'a': 1}
+>>> f(1,2,b=2)
+(1, 2) {'b': 2}
+案例：命名关键字参数，和关键字参数不同，命名关键字参数需要一个特殊分隔符*，*后面的参数被视为命名关键字参数
+如果函数定义中已经有了一个可变参数，后面跟着的命名关键字参数就不再需要一个特殊分隔符*了
+def person(name, age, *, city, job):
+    print(name, age, city, job)
+>>> person('Jack', 24, city='Beijing', job='Engineer') 调用方式必须写上city和job
+Jack 24 Beijing Engineer
+
+案例：解包操作
+>>> def f4(a,b,c):
+...     print(a,b,c) 
+... 
+>>> t1=(1,2,3)  把此处修改为列表尝试下t=[1,2,3]
+>>> f4(*t1) 用在调用函数中
+1 2 3
+>>> t2={'a':4,'b':5,'c':6}  字典里面的键必须和定义函数里面的键保持一致
+>>> f4(**t2) 用在调用函数中
+4 5 6
+案例：python函数参数的传递方式，以及是值传递还是对象引用传递的区别
+1）如果对象是不可变的，比如字符串，整数，元组，则是值传递，因为此时是通过拷贝进行传递的，你不可能在原处改变对象。
+2）如果对象是改变的，比如列表，字典，则是对象引用传递
+案例：函数的定义和调用
+]# vi  /root/test.py
+#! /usr/bin/python3
+# -*- coding: utf-8 -*-     带有中文时，最好表示是utf-8格式
+def printname(str):
+    "print your name by str"  起到解释和说明的作用
+    print(str)
+>>> import test  把test.py当作模块导入进来，实际上一个模块就是一个.py的文件
+>>> help(test.printname)  查看模块内的函数帮助
+Help on function printname in module test:
+printname(str)
+    print your name by str
+(END)
+>>> help(test) 查看模块的帮助
+Help on module test:
+NAME
+    test
+FUNCTIONS
+    printname(str)
+        print your name by str
+FILE
+    /root/test.py
+(END)
+>>> test.  显示出模块test支持的方法和属性
+test.__cached__         test.__doc__            test.__getattribute__(  test.__loader__         test.__package__        test.__sizeof__(
+test.__class__(         test.__eq__(            test.__gt__(            test.__lt__(            test.__reduce__(        test.__spec__
+test.__delattr__(       test.__file__           test.__hash__(          test.__name__           test.__reduce_ex__(     test.__str__(
+test.__dict__           test.__format__(        test.__init__(          test.__ne__(            test.__repr__(          test.__subclasshook__(
+test.__dir__(           test.__ge__(            test.__le__(            test.__new__(           test.__setattr__(       test.printname(
+>>> test.printname('chenhao')  调用test的printname函数
+chenhao
+In [2]: cat test.py 如果使用的是ipython，还可以在ipython内部查看test.py的内容
+#! /usr/bin/python3
+
+def printname(str):
+    "print your name by str"
+    print(str)
+
+高阶函数介绍：
+案例：map()函数接收两个参数，一个是函数，一个是Iterable，map将传入的函数依次作用到序列的每个元素，并把结果作为新的Iterator返回。
+]# vi t1.py
+#!/usr/local/bin/python3
+
+def normalize(name):
+    for i in range(len(name)):
+          if i==0:
+             a=name[i]
+             a=a.upper()
+             b=a
+          else:
+             a=name[i]
+             a=a.lower()
+             b=b+a
+    return b
+
+L1 = ['adam', 'LISA', 'barT']
+L2 = list(map(normalize, L1))
+print(L2)
+]# python3 t1.py   把首字母全部转换为大写字母，后续全部都是小写字母
+['Adam', 'Lisa', 'Bart']
+案例：reduce把一个函数作用在一个序列[x1, x2, x3, ...]上，这个函数必须接收两个参数，reduce把结果继续和序列的下一个元素做累积计算，其效果就是：
+reduce(f, [x1, x2, x3, x4]) = f(f(f(x1, x2), x3), x4)
+]# vi t1.py
+#!/usr/local/bin/python3
+
+from functools import reduce
+def prod(L):
+    def f1(x,y):
+        return x*y
+    return reduce(f1,L)
+l=[1,2,3,4,5]
+a=prod(l)
+print(a)
+]# python3  t1.py
+120
+案例：sorted()函数也是一个高阶函数，它还可以接收一个key函数来实现自定义的排序，例如按绝对值大小排序：
+>>> sorted([36, 5, -12, 9, -21], key=abs)
+[5, 9, -12, -21, 36]
+案例：lambda就是匿名函数，通常是在需要一个函数，但是又不想去命名一个函数名的场合下使用，实现的功能和函数一样
+冒号前面的表示函数参数。匿名函数有个限制，就是只能有一个表达式，不用写return，返回值就是该表达式的结果
+>>> f=lambda x,y,z: print(x+y+z)  把lambda返回的结果保存在f变量中，通过f变量来调用
+>>> f(1,2,3) 
+6
+
+59-6 python模块和包简介
+装饰器是一个函数，用来包装另外一个函数，以实现透明的增强或修改被包装对象的功能
+装饰器其实就是一个以函数作为参数并返回一个替换函数的可执行函数
+闭包的原理：
+   当内嵌函数引用了包含它的函数（enclosing function）中的变量后，这些变量会被保存在enclosing function的__closure__属性中，成为enclosing function本身的一部分；
+   也就是说，这些变量的生命周期会和enclosing function一样。
+Python中创建一个闭包可以归结为以下三点：
+   闭包函数必须有内嵌函数
+   内嵌函数需要引用该嵌套函数上一级namespace中的变量
+   闭包函数必须返回内嵌函数
+装饰器天然使用了闭包原理
+案例：@装饰器名称，出现在函数定义之前，@是关键符合
+]# vi  decorators.py
+#!/usr/local/bin/python3
+
+def deco(func):
+    def wrapper():
+        print("before show")
+        func()
+        print("end show")
+    return wrapper
+
+@deco
+def show():
+    print("in the show function")
+
+show()
+]# python3 decorators.py
+before show
+in the show function
+end show
+解释：
+实际上是把show()函数做为参数传递给了deco函数，然后返回一个函数替代原先的show(),也就是现在的show()函数的真实代码如下所示
+def show():
+        print("before show")
+        print("in the show function")
+        print("end show")
+
+说明1：
+@dec2
+@dec1
+def func(arg1, arg2, ...):
+    pass
+可以还原成
+def func(arg1, arg2, ...):
+    pass
+func = dec2(dec1(func))
+
+说明2：
+@decomaker(argA, argB, ...)
+def func(arg1, arg2, ...):
+    pass
+可以还原成
+func = decomaker(argA, argB, ...)(func)
+参照廖雪峰博客的解释
+
+包的结构介绍：
+mycompany
+ ├─ web
+ │  ├─ __init__.py
+ │  ├─ utils.py
+ │  └─ www.py
+ ├─ __init__.py
+ ├─ utils.py
+文件www.py的模块名就是mycompany.web.www，两个文件utils.py的模块名分别是mycompany.utils和mycompany.web.utils。
+__init__.py可以是空文件，也可以有Python代码，因为__init__.py本身就是一个模块，而它的模块名就是mycompany
+
+案例：构建一个包的简单过程
+]# mkdir -p  /tmp/test/{suba,subb}
+]# cd /tmp/test
+]# vi suba/aa.py
+   def showaa(): 定义函数时这个括号一定不能少
+       print('aa')
+]# vi suba/bb.py
+   def showbb():
+       print('bb')
+]# vi subb/cc.py
+   def showcc():
+       print('cc')
+]# vi subb/dd.py
+   def showdd():
+       print('dd')
+]# touch suba/__init__.py
+]# touch subb/__init__.py  如上这两个文件内容可以为空，但是文件一定要存在
+]# vi setup.py
+from distutils.core import setup
+setup(name='xwp',version='1.0',description='xwp module',author='chenhao',py_modules=['suba.aa','suba.bb','subb.cc','subb.dd'])
+name表示包的名称，py_modules表示包里面包含的模块名称
+
+]# tree .   这是构建一个包的基本目录结构
+.
+├── setup.py
+├── suba
+│   ├── aa.py
+│   ├── bb.py
+│   └── __init__.py
+└── subb
+    ├── cc.py
+    ├── dd.py
+    └── __init__.py
+]# python3 setup.py build 这一步表示构建包，不能报错
+]# tree . 多出了build目录
+.
+├── build
+│   └── lib
+│       ├── suba
+│       │   ├── aa.py
+│       │   ├── bb.py
+│       │   └── __init__.py
+│       └── subb
+│           ├── cc.py
+│           ├── dd.py
+│           └── __init__.py
+├── setup.py
+├── suba
+│   ├── aa.py
+│   ├── bb.py
+│   ├── __init__.py
+│   └── __pycache__
+│       └── __init__.cpython-34.pyc
+└── subb
+    ├── cc.py
+    ├── dd.py
+    ├── __init__.py
+    └── __pycache__
+        └── __init__.cpython-34.pyc
+
+]# python3 setup.py sdist  这一步表示创建压缩包，不能报错
+]# tree .  主要多了dist目录
+.
+├── build
+│   └── lib
+│       ├── suba
+│       │   ├── aa.py
+│       │   ├── bb.py
+│       │   └── __init__.py
+│       └── subb
+│           ├── cc.py
+│           ├── dd.py
+│           └── __init__.py
+├── dist
+│   └── xwp-1.0.tar.gz
+├── MANIFEST
+├── setup.py
+├── suba
+│   ├── aa.py
+│   ├── bb.py
+│   ├── __init__.py
+│   └── __pycache__
+│       └── __init__.cpython-34.pyc
+└── subb
+    ├── cc.py
+    ├── dd.py
+    ├── __init__.py
+    └── __pycache__
+        └── __init__.cpython-34.pyc
+
+]# cp dist/xwp-1.0.tar.gz /root/
+]# tar -zxvf /root/xwp-1.0.tar.gz
+]# cd /root/xwp-1.0
+]# python3 setup.py install 安装这个包，不能报错
+]# python3
+>>> import suba.aa  一定要导入包里面的py文件
+>>> suba.aa.showaa()  说明包构建成功
+aa
+
+
+
+安装第三方模块一般使用easy_install 或者pip install 
+sys模块---------------------------------------------------------------------------------------------------------------------------------------------------------------
+python标准库有很多内置模块，这些模块有大量函数，导入一个模块后就可以访问模块内部包含的函数，变量以及类，常用模块有platform,copy,os,sys,string
+    help('modules')查看目前版本支持的模块
+    模块也是对象
+    模块也是一个容器
+    导入模块
+       import：导入指定的整个模块，会引入新的模块空间，即模块名
+       比如import copy
+       from...import....：导入指定模块的部分属性，把模块的属性直接引用到当前名称空间
+       比如from copy import deepcopy
+           deepcopy()
+
+模块搜索路径：
+    程序的主目录
+    PYTHONPATH变量中定义的各目录
+    标准链接库目录
+    任何.pth结尾的文本文件中定义的路径
+以上4个都在sys.path所包含的路径，sys.path决定了解释器搜索模块的路径，可以通过修改sys.path变量内容增加其他路径
+>>> import sys
+>>> print(sys.path)
+['', '/usr/lib64/python34.zip', '/usr/lib64/python3.4', '/usr/lib64/python3.4/plat-linux', '/usr/lib64/python3.4/lib-dynload', '/usr/lib64/python3.4/site-packages', '/usr/lib/python3.4/site-packages']
+>>> sys.ps1 该变量定义了主提示符
+'>>> '
+>>> sys.ps2 该变量定义了次提示符
+'... '
+>>> sys.path.append('/Users/michael/my_py_scripts') 可以通过修改sys.path来增加自己的路径
+
+案例：sys模块介绍
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+' a test module '
+__author__ = 'Michael Liao'
+import sys
+def test():
+    args = sys.argv
+    if len(args)==1:
+        print('Hello, world!')
+    elif len(args)==2:
+        print('Hello, %s!' % args[1])
+    else:
+        print('Too many arguments!')
+
+if __name__=='__main__':
+    test()
+使用sys模块的第一步，就是导入该模块：import sys
+导入sys模块后，我们就有了变量sys指向该模块，利用sys这个变量，就可以访问sys模块的所有功能。
+sys模块有一个argv变量，用list存储了命令行的所有参数。argv至少有一个元素，因为第一个参数永远是该.py文件的名称，例如：
+运行python3 hello.py获得的sys.argv就是['hello.py']；
+运行python3 hello.py Michael获得的sys.argv就是['hello.py', 'Michael]。
+最后，注意到这两行代码：
+if __name__=='__main__':
+    test()
+当我们在命令行运行hello模块文件时，Python解释器把一个特殊变量__name__置为__main__，而如果在其他地方导入该hello模块时，if判断将失败，
+因此，这种if测试可以让一个模块通过命令行运行时执行一些额外的代码，最常见的就是运行测试。
+
+我们可以用命令行运行hello.py看看效果：
+$ python3 hello.py
+Hello, world!
+$ python hello.py Michael
+Hello, Michael!
+如果启动Python交互环境，再导入hello模块：
+$ python3
+>>> import hello
+>>>
+导入时，没有打印Hello, word!，因为没有执行test()函数。
+调用hello.test()时，才能打印出Hello, word!：
+>>> hello.test()
+Hello, world!
+
+string模块-----------------------------------------------------------------------------------------------------------------------------------------------------------
+>>> import string
+>>> string.ascii_lowercase
+'abcdefghijklmnopqrstuvwxyz'
+>>> string.ascii_uppercase
+'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+>>> string.digits
+'0123456789'
+>>> string.ascii_letters
+'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+
+>>> print("host: %s\nport %d" % ('mars',80))                 \t（水平空格，也称为tab符号）,\n（换行符）只有在print（）中才会生效
+host: mars
+port 80
+
+>>> print(r'\n')  r表示取原始字符串
+\n
+
+string模块常用命令解释：
+string.join(seq)，以string为分隔符，将seq中的字符串合并成一个新字符
+string.lower(）将string中的所有大写字符串转换成小写字符串
+string.upper(）将string中的所有小写字符串转换成大写字符串
+string.replace(string1,string2)将string中的string1替换为string2
+string.split("str"）以str为分隔符切分string字符串，没有调用参数时，默认分隔符是空格
+具体案例
+>>> s=' '.join(('abc','def'))
+>>> s
+'abc def'
+>>> s.upper()
+'ABC DEF’
+>>> s.replace('abc','123')
+'123 def'
+>>> s 再次验证字符串不能改变
+'abc def'
+>>> s.split(' ')[1]
+'def'
+>>> ':'.join(s.split()) 没有调用参数时，默认分隔符是空格
+'abc:def'
+
+
+正则表达式模块---------------------------------------------------------------------------------------------------------------------------------------------------------
+可以使用re模块中的sub()函数或者subn()函数来进行查询和替换，但字符串的查询和替换功能一般情况下优先考虑string模块
+subn()方法执行的效果跟sub()一样，不过它会返回一个二维数组，包括替换后的新的字符串和总共替换的数量
+格式：sub(replacement, string[,count=0])（replacement是被替换成的文本，string是需要被查找的整个字符串，count是一个可选参数，指最大被替换的数量）
+
+案例：当我们在Python中使用正则表达式时，re模块内部会干两件事情：
+1）编译正则表达式，如果正则表达式的字符串本身不合法，会报错；
+2）用编译后的正则表达式去匹配字符串。
+如果一个正则表达式要重复使用几千次，出于效率的考虑，我们可以预编译该正则表达式，接下来重复使用时就不需要编译这个步骤了，直接匹配：
+>>> import re
+>>> p=re.compile('blue|white|red')  该命令只是对将要被替换的字符做了一个标记，实际就是预编译
+>>> print(p.sub('colour','blue socks and red shoes'))  使用预编译
+colour socks and colour shoes
+>>> print(p.sub('aa','blue socks and red shoes'))
+aa socks and aa shoes
+>>> print(p.sub('aa','blue socks and red shoes',count=1))
+aa socks and red shoes
+案例：预编译
+>>> import re
+>>> re_telephone = re.compile(r'^(\d{3})-(\d{3,8})$')  预编译
+>>> re_telephone.match('010-12345').groups()  使用
+('010', '12345')
+>>> re_telephone.match('010-8086').groups()
+('010', '8086')
+编译后生成Regular Expression对象，由于该对象自己包含了正则表达式，所以调用对应的方法时不用给出正则字符串。
+案例：
+re模块中match(pattern,string[,flags]),检查string的开头是否与pattern匹配。
+re模块中research(pattern,string[,flags]),在string搜索pattern的第一个匹配值。
+>>> print(re.match('super', 'superstition'))
+<_sre.SRE_Match object; span=(0, 5), match='super'>
+>>> print(re.match('super', 'superstition').span())
+(0, 5)
+>>>print(re.match(‘super’, ‘insuperable’))
+None
+>>>print(re.search(‘super’, ‘superstition’).span())
+(0, 5)
+>>>print(re.search(‘super’, ‘insuperable’).span())
+(2, 7)
+案例：match()方法判断是否匹配，如果匹配成功，返回一个Match对象，否则返回None
+>>> re.match(r'^\d{3}-\d{3,8}$', '010-12345')  因为使用了r，所以不需要使用转移符号\
+<_sre.SRE_Match object; span=(0, 9), match='010-12345'>
+>>> re.split(r'[\s,]+', 'a,b, c  d')
+['a', 'b', 'c', 'd']
+案例：分组
+>>> m = re.match(r'^(\d{3})-(\d{3,8})$', '010-12345')
+>>> m.group(0)  0表示整个字符串
+'010-12345'
+>>> m.group(1)
+'010'
+>>> m.group(2)
+'12345'
+
+datetime模块--------------------------------------------------------------------------------------------------------
+案例：
+>>> from datetime import datetime,timedelta
+>>> datetime.now()  获取当前时间
+datetime.datetime(2018, 2, 4, 21, 48, 31, 106185)
+>>> now=datetime.now()
+>>> now    和print(now)显示出来的格式有区别
+datetime.datetime(2018, 2, 4, 21, 48, 44, 601989)
+>>> now + timedelta(hours=1)   要导入timedetla才能做时间的计算
+datetime.datetime(2018, 2, 4, 22, 48, 44, 601989)
+>>> print(now)
+2018-02-04 21:48:44.601989
+>>> print(type(now))
+<class 'datetime.datetime'>
+案例：获取指定日期和时间
+>>> dt = datetime(2015, 4, 19, 12, 20)
+>>> print(dt)
+2015-04-19 12:20:00
+>>> dt.timestamp()  把datetime转换为timestamp
+1429417200.0
+说明：
+在计算机中，时间实际上是用数字表示的。我们把1970年1月1日 00:00:00 UTC+00:00时区的时刻称为epoch time，记为0（1970年以前的时间timestamp为负数），
+当前时间就是相对于epoch time的秒数，称为timestamp。可以认为：timestamp = 0 = 1970-1-1 00:00:00 UTC+0:00
+案例：把timestamp转换为datetime
+>>> t = 1429417200.0  timestamp是一个浮点数
+>>> datetime.fromtimestamp(t)
+datetime.datetime(2015, 4, 19, 12, 20)
+案例：把字符串转换为datatime
+>>> cday = datetime.strptime('2015-6-1 18:19:59', '%Y-%m-%d %H:%M:%S')
+>>> print(cday)
+2015-06-01 18:19:59
+
+collections模块----------------------------------------------------------------------------------------------------------
+collections是Python内建的一个集合模块，提供了许多有用的集合类
+案例：namedtuple是一个函数，它用来创建一个自定义的tuple对象，并且规定了tuple元素的个数，并可以用属性而不是索引来引用tuple的某个元素
+>>> from collections import namedtuple
+>>> point=namedtuple('point',['x','y'])
+>>> p=point(1,2)
+>>> p
+point(x=1, y=2)
+>>> p.x
+1
+案例：使用list存储数据时，按索引访问元素很快，但是插入和删除元素就很慢了，因为list是线性存储，数据量大的时候，插入和删除效率很低。
+deque是为了高效实现插入和删除操作的双向列表，适合用于队列和栈。使用方式基本和list一样
+>>> from collections import deque
+>>> l=deque([1,2,3])
+>>> l
+deque([1, 2, 3])
+>>> print(l)
+deque([1, 2, 3])
+>>> l.append('x')
+>>> l.appendleft(0)
+>>> l
+deque([0, 1, 2, 3, 'x'])
+案例：使用dict时，如果引用的Key不存在，就会抛出KeyError。如果希望key不存在时，返回一个默认值，就可以用defaultdict，其他行为跟dict是完全一样的
+>>> dd = defaultdict(lambda:'N/A')
+>>> dd['key1']=1
+>>> dd['key1']
+1
+>>> dd['key2'] key2的值不存在，所以返回设置好的字符
+'N/A'
+案例：有序字典
+>>> from collections import OrderedDict
+>>> d = dict([('a', 1), ('b', 2), ('c', 3)])
+>>> d
+{'a': 1, 'b': 2, 'c': 3}
+>>> od = OrderedDict([('a', 1), ('b', 2), ('c', 3)])
+>>> od
+OrderedDict([('a', 1), ('b', 2), ('c', 3)])
+OrderedDict的Key会按照插入的顺序排列，不是Key本身排序
+案例：Counter是一个简单的计数器，例如统计字符出现的个数
+>>> from collections import Counter
+>>> c=Counter()
+>>> for i in 'hello':
+...     c[i]=c[i]+1
+...
+>>> c
+Counter({'l': 2, 'h': 1, 'e': 1, 'o': 1})
+
+urllib模块--------------------------------------------------------------------------
+urllib提供了一系列用于操作URL的功能
+urllib提供的功能就是利用程序去执行各种HTTP请求。如果要模拟浏览器完成特定功能，需要把请求伪装成浏览器。
+伪装的方法是先监控浏览器发出的请求，再根据浏览器的请求头来伪装，User-Agent头就是用来标识浏览器的。
+案例：get方法
+]# vi t1.py
+#!/usr/local/bin/python3
+
+from urllib import request
+with request.urlopen('https://api.douban.com/v2/book/2129650') as f:
+    data = f.read()
+    print('Status:', f.status, f.reason)
+    for k, v in f.getheaders():
+        print('%s: %s' % (k, v))
+    print('Data:', data.decode('utf-8'))  从网络上获取的数据在本地显示时先要进行解码
+]# python3 t1.py
+Status: 200 OK
+Date: Mon, 05 Feb 2018 13:32:46 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 2058
+Connection: close
+Vary: Accept-Encoding
+X-Ratelimit-Remaining2: 99
+X-Ratelimit-Limit2: 100
+Expires: Sun, 1 Jan 2006 01:00:00 GMT
+Pragma: no-cache
+Cache-Control: must-revalidate, no-cache, private
+Set-Cookie: bid=2i4B6kyScGc; Expires=Tue, 05-Feb-19 13:32:46 GMT; Domain=.douban.com; Path=/
+X-DOUBAN-NEWBID: 2i4B6kyScGc
+X-DAE-Node: sindar1b
+X-DAE-App: book
+Server: dae   如下是很多的内容
+Data: {"rating":{"max":10,"numRaters":16,"average":"7.4","min":0},"subtitle":"","author":["廖雪峰"],"pubdate":"2007","tags":[{"count":21,"name":"spring","title":"spring"},{"count":13,"name":"Java","title":"Java"},{"count":6,"name":"javaee","title":"javaee"},{"count":5,"name":"j2ee","title":"j2ee"},{"count":4,"name":"计算机","title":"计算机"},{"count":4,"name":"编程",
+
+Pillow模块-------------------------------------------------------------------------------------------------------
+PIL：Python Imaging Library，已经是Python平台事实上的图像处理标准库了。
+志愿者在PIL的基础上创建了兼容的版本，名字叫Pillow，支持最新Python 3.x
+]# pip3 install pillow
+]# vi cat t1.py
+#!/usr/local/bin/python3
+
+from PIL import Image
+# 打开一个jpg图像文件，注意是绝对路径:
+im = Image.open('/Users/chenhao/Desktop/FullSizeRender.jpg')
+# 获得图像尺寸:
+w, h = im.size
+print('Original image size: %sx%s' % (w, h))
+# 缩放到50%:
+im.thumbnail((w//2, h//2))
+print('Resize image to: %sx%s' % (w//2, h//2))
+]# python3  t1.py
+Original image size: 960x1280
+Resize image to: 480x640
+
+chardet模块--------------------------
+案例：以指定的编码格式编码字符串a,在python3中执行
+>>> a='hello world nihao hello nihao'
+>>> type(a)
+<class 'str'> 此时字符串类型是str
+>>> b=a.encode('utf-8')
+>>> b
+b'hello world nihao hello nihao'
+>>> type(b)  
+<class 'bytes'>
+
+]# pip install chardet
+案例：检测字符串的编码格式
+>>> import chardet 
+>>> chardet.detect(b'Hello, world!')
+{'encoding': 'ascii', 'confidence': 1.0, 'language': ''}
+检测出的编码是ascii，注意到还有个confidence字段，表示检测的概率是1.0（即100%）。
+
+案例：检测GBK编码的中文
+>>> data = '离离原上草，一岁一枯荣'.encode('gbk')
+>>> chardet.detect(data)
+{'encoding': 'GB2312', 'confidence': 0.7407407407407407, 'language': 'Chinese'}
+检测的编码是GB2312，注意到GBK是GB2312的超集，两者是同一种编码，检测正确的概率是74%，language字段指出的语言是'Chinese'。
+psutil模块-------------------------------------------------------------------------------------------------
+在Python中获取系统信息的另一办法是使用psutil这个第三方模块,psutil = process and system utilities
+pip install psutil
+>>> import psutil
+>>> psutil.cpu_count()  默认获取的是逻辑核心
+4
+>>> psutil.cpu_count(logical=False)  此时获取的是物理核心，False的首字母要大写
+2
+>>> psutil.cpu_times()  获取cpu使用情况
+scputimes(user=19583.43, nice=0.0, system=14556.16, idle=347187.18)
+>>> psutil.virtual_memory()  内存使用情况
+svmem(total=8589934592, available=3176837120, percent=63.0, used=8176955392, free=31318016, active=3214831616, inactive=3145519104, wired=1816604672)
+>>> psutil.swap_memory() 交换空间使用情况
+sswap(total=1073741824, used=64225280, free=1009516544, percent=6.0, sin=13531164672, sout=415227904)
+>>> psutil.disk_partitions()  磁盘情况
+[sdiskpart(device='/dev/disk1s1', mountpoint='/', fstype='apfs', opts='rw,local,rootfs,dovolfs,journaled,multilabel'), sdiskpart(device='/dev/disk1s4', mountpoint='/private/var/vm', fstype='apfs', opts='rw,noexec,local,dovolfs,dontbrowse,journaled,multilabel,noatime'), sdiskpart(device='/dev/disk2s1', mountpoint='/Volumes/Sequel Pro 1.1.2', fstype='hfs', opts='ro,nosuid,quarantine,local,dovolfs,ignore-ownership,multilabel')]
+tcp网络编程----------------------------------------------------------------------------------------------
+案例：tcp客户端编程
+]# vi  t1.py
+#!/usr/local/bin/python3
+
+import socket
+# 创建一个socket:
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 建立连接:
+s.connect(('www.sina.com.cn', 80))
+s.send(b'GET / HTTP/1.1\r\nHost: www.sina.com.cn\r\nConnection: close\r\n\r\n')  /表示请求的是首页,传输和接收过程中的数据必须都是bytes类型
+buffer = []
+while True:
+    # 每次最多接收1k字节:
+    d = s.recv(1024)
+    if d:
+        buffer.append(d)
+    else:
+        break
+data = b''.join(buffer)
+# 关闭连接:
+s.close()
+header, html = data.split(b'\r\n\r\n', 1)  Header与header之间，换行符是\r\n；当遇到连续两个\r\n时，Header部分结束，后面的数据全部是Body
+print(header.decode('utf-8'))  把响应头部打印出来
+# 把接收的数据写入文件:
+with open('/Users/chenhao/sina.html', 'wb') as f:
+    f.write(html)
+]# python3  t1.py
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sat, 10 Feb 2018 06:08:24 GMT
+Content-Type: text/html        Body的数据类型由Content-Type头来确定，如果是网页，Body就是文本，如果是图片，Body就是图片的二进制数据。
+Content-Length: 603388
+Connection: close
+Last-Modified: Sat, 10 Feb 2018 06:06:19 GMT
+Vary: Accept-Encoding
+Expires: Sat, 10 Feb 2018 06:09:23 GMT
+Cache-Control: max-age=60
+X-Powered-By: shci_v1.03
+Age: 1
+Via: http/1.1 cnc.beixian.ha2ts4.205 (ApacheTrafficServer/6.2.1 [cMsSf ]), http/1.1 gwbn.guangzhou.ha2ts4.26 (ApacheTrafficServer/6.2.1 [cHs f ])
+X-Via-Edge: 1518242904864cc62e9651ef52a7c4b016238
+X-Cache: MISS.MERGE.26
+X-Via-CDN: f=edge,s=gwbn.guangzhou.ha2ts4.26.nb.sinaedge.com,c=101.233.98.204;f=Edge,s=gwbn.guangzhou.ha2ts4.26,c=124.42.245.26
+然后在本地浏览器中输入file:///Users/chenhao/sina.html即可查看到sina.html内容
+案例：tcp服务器端编程
+每个连接都必须创建新线程或线程来处理，否则，单线程在处理连接的过程中，无法接受其他客户端的连接
+]# vi  server.py
+#!/usr/local/bin/python3
+
+import socket,time,threading  必须要导入time,threading
+def tcplink(sock, addr): 函数要先定义才能调用
+    print('Accept new connection from %s:%s...' % addr)
+    sock.send(b'Welcome!')   一连接上就发welcome信息
+    while True:
+        data = sock.recv(1024)
+        time.sleep(1)
+        if not data or data.decode('utf-8') == 'exit':
+            break
+        sock.send(('Hello, %s!' % data.decode('utf-8')).encode('utf-8'))  在客户端发来的字符串基础上增加Hello然后返回给客户端
+    sock.close()
+    print('Connection from %s:%s closed.' % addr)
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 监听端口:
+s.bind(('127.0.0.1', 9999))
+s.listen(5)
+print('Waiting for connection...') 
+while True:
+    # 接受一个新连接:
+    sock, addr = s.accept()
+    # 创建新线程来处理TCP连接:
+    t = threading.Thread(target=tcplink, args=(sock, addr))
+    t.start()
+]# vi  client.py  此时需要一个客户端
+#!/usr/local/bin/python3
+
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 建立连接:
+s.connect(('127.0.0.1', 9999))
+# 接收欢迎消息:
+print(s.recv(1024).decode('utf-8'))
+for data in [b'Michael', b'Tracy', b'Sarah']:
+    # 发送数据:
+    s.send(data)
+    print(s.recv(1024).decode('utf-8'))
+s.send(b'exit')
+s.close()
+在终端运行server.py
+]# python3 server.py
+Waiting for connection...  运行python3 server.py后只会出现这一行，表示等待客户端连接
+Accept new connection from 127.0.0.1:64116...  运行客户端client.py后才会出现这一行
+Connection from 127.0.0.1:64116 closed.  服务器端会一直运行，需要执行Ctrl+C退出程序
+在另外一个运行client.py
+]# python3 client.py
+Welcome!
+Hello, Michael!
+Hello, Tracy!
+Hello, Sarah!
+
+math模块----------------------------------------------------------------------------------------------------
+案例：math模块的简单使用
+>>> import math
+>>> math.pi                π=180°
+3.141592653589793
+>>> math.sin(math.pi/6)    表示sin30°=0.5
+0.49999999999999994
+random模块-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+random模块常用命令
+random.randint(#,#) 生成指定范围内的随机整数
+random.randrange(#,#)生成指定范围内的随机数
+random.uniform(#,#)生成指定范围内的随机浮点数
+random.random()  随机生成0到1之间的小数
+random.choice()  随机返回给定序列
+
+案例:random模块简单使用
+>>> import random
+>>> random.choice(['hello','world',1,2,3])
+'world'
+>>> random.randint(1,100)
+37
+>>> random.random()
+0.9113216150413466
+
+案例：python3开发学习，用户可以自定义需要多少行，多少列，以及随机数的范围
+[root@www test]# vim test7.py
+#!/usr/bin/python3
+import random
+a=input('please input a min number:')
+min=int(a)
+b=input('please input a max number:')
+max=int(b)
+c=input('pleae input a row:')
+rows=int(c)
+d=input('please input a column:')
+columns=int(d)
+print('min number is:',a,'max number is:',b)
+print('rows is:',rows,'columns is:',columns)
+
+row=0
+while row <rows:
+    line=''
+    column=0
+    while column <columns:
+          i=random.randint(min,max)
+          h=str(i)
+          while len(h) < 5:
+              h +=' '
+          line +=h
+          column +=1
+    print(line)
+    row +=1
+[root@www test]# python3 test7.py
+please input a min number:2
+please input a max number:200
+pleae input a row:3
+please input a column:5
+min number is: 2 max number is: 200
+rows is: 3 columns is: 5
+142  88   120  111  193
+187  87   8    71   163
+62   71   160  103  24
+
+常用内置模块
+datetime，一般会是from datetime import datetime
+urllib  urllib提供了一系列用于操作URL的功能
+常用第三方模块
+requests,比内置的urllib更好用
+
+
+
+
+
