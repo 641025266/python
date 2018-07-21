@@ -1,0 +1,132 @@
+如下代码都是实际测试过可以正常发送邮件，如果出现如下错误：
+554 DT:SPM 发送的邮件内容包含了未被许可的信息，或被系统识别为垃圾邮件。请检查是否有用户发送病毒或者垃圾邮件，请尝试其他主机是否可以正常发送
+554 DT:SUM 信封发件人和信头发件人不匹配,也就是要求信封发件人和信头发件人要一样
+如果出现其他错误，仔细看报出来的错误是什么
+如果是阿里云主机，
+s = smtplib.SMTP()
+s.connect("smtp.163.com", "25")  ucloud主机可以正常使用这两行代码
+把如上两行代码修改为如下代码即可,此处使用的是smtp.163.com，所以加密端口是465，如果使用其他邮件服务器，需要另外查找对应的加密端口
+s = smtplib.SMTP_SSL()
+s.connect("smtp.163.com", "465")
+邮件发送模块-----------------------------------------------------------------------------------------------
+案例：发送文本的邮件
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
+from email.utils import parseaddr, formataddr
+# 格式化邮件地址
+def formatAddr(s):
+    name, addr = parseaddr(s)
+    return formataddr((Header(name, 'utf-8').encode(), addr))
+def sendMail():
+    smtp_server = 'smtp.163.com'
+    from_mail = 'chenhao19890817@163.com'
+    mail_pass = 'ch48778358'
+    to_mail = ['641025266@qq.com', 'hao.chen@enai.im']
+    # Header对中文进行转码
+    msg=MIMEText('你好!', 'plain', 'utf-8')
+    msg['From'] = from_mail
+    msg['To'] = ','.join(to_mail)
+    msg['Subject'] = Header('监控', 'utf-8').encode()
+    try:
+        s = smtplib.SMTP()
+        s.connect(smtp_server, "25")
+        s.login(from_mail, mail_pass)
+        s.sendmail(from_mail, to_mail, msg.as_string())  # as_string()把MIMEText对象变成str
+        s.quit()
+    except smtplib.SMTPException as e:
+        print "Error: %s" % e
+if __name__ == "__main__":
+    sendMail()
+案例：发送html，就是在之前发送文本的基础上，把msg=MIMEText('你好', 'plain', 'utf-8')改为msg=MIMEText(body, 'html', 'utf-8')即可
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
+from email.utils import parseaddr, formataddr
+# 格式化邮件地址
+def formatAddr(s):
+    name, addr = parseaddr(s)
+    return formataddr((Header(name, 'utf-8').encode(), addr))
+def sendMail(body):
+    smtp_server = 'smtp.163.com'
+    from_mail = 'chenhao19890817@163.com'
+    mail_pass = 'ch48778358'
+    to_mail = ['641025266@qq.com', 'hao.chen@enai.im']
+    # 构造一个MIMEMultipart对象代表邮件本身
+    #msg = MIMEMultipart()
+    # Header对中文进行转码
+    msg=MIMEText(body, 'html', 'utf-8')
+    msg['From'] = from_mail
+    msg['To'] = ','.join(to_mail)
+    msg['Subject'] = Header('监控', 'utf-8').encode()
+    try:
+        s = smtplib.SMTP()
+        s.connect(smtp_server, "25")
+        s.login(from_mail, mail_pass)
+        s.sendmail(from_mail, to_mail, msg.as_string())  # as_string()把MIMEText对象变成str
+        s.quit()
+    except smtplib.SMTPException as e:
+        print "Error: %s" % e
+if __name__ == "__main__":
+    body = """
+    <h1>hello</h1>   h1和h2表示字体的大小
+    <h2>world</h2>
+    """
+    sendMail(body)
+案例：由于SMTP.sendmail()方法不支持添加附件，所以可以使用email模块来满足需求。email模块是一个构造邮件和解析邮件的模块。
+带附件的邮件可以看做包含若干部分的邮件：文本和各个附件本身，所以，可以构造一个MIMEMultipart对象代表邮件本身，
+然后往里面加上一个MIMEText作为邮件正文，再继续往里面加上表示附件的MIMEBase对象即可
+#!/usr/bin/python
+# -*- coding: utf-8 -*-  有中文一定要指明utf-8编码
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
+from email import encoders
+from email.mime.base import MIMEBase
+from email.utils import parseaddr, formataddr
+# 格式化邮件地址
+def formatAddr(s):
+    name, addr = parseaddr(s)
+    return formataddr((Header(name, 'utf-8').encode(), addr))
+def sendMail(body, attachment):
+    smtp_server = 'smtp.163.com'
+    from_mail = 'chenhao19890817@163.com'
+    mail_pass = 'ch48778358'
+    to_mail = ['641025266@qq.com', 'hao.chen@enai.im']
+    # 构造一个MIMEMultipart对象代表邮件本身
+    msg = MIMEMultipart()
+    # Header对中文进行转码
+    msg['From'] = formatAddr('管理员 <%s>' % from_mail).encode()
+    msg['To'] = ','.join(to_mail)
+    msg['Subject'] = Header('监控', 'utf-8').encode()
+    # plain代表纯文本
+    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+    # 二进制方式模式文件
+    with open(attachment, 'rb') as f:
+        # MIMEBase表示附件的对象
+        mime = MIMEBase('text', 'txt', filename=attachment)
+        # filename是显示附件名字
+        mime.add_header('Content-Disposition', 'attachment', filename=attachment)
+        # 获取附件内容
+        mime.set_payload(f.read())   
+        encoders.encode_base64(mime)
+        # 作为附件添加到邮件
+        msg.attach(mime)
+    try:
+        s = smtplib.SMTP()
+        s.connect(smtp_server, "25")
+        s.login(from_mail, mail_pass)
+        s.sendmail(from_mail, to_mail, msg.as_string())  # as_string()把MIMEText对象变成str
+        s.quit()
+    except smtplib.SMTPException as e:
+        print "Error: %s" % e
+if __name__ == "__main__":
+    sendMail('附件是测试数据, 请查收！', 'test.txt')  在脚本的同一个目录下创建一个test.txt文档
+
