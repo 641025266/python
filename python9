@@ -1,0 +1,67 @@
+python版本介绍：
+    2.x版本只发展到2.7
+    现在最新的是3.x，3.x的字符串统一用unicode编码
+pyenv的作用：
+   管理python的解释器
+   管理python的版本
+   管理python的虚拟环境
+
+pyenv的安装方式：
+]# yum install -y gcc make patch gdbm-devel openssl-devel sqlite-devel readline-devel zlib-devel bzip2-devel  使用root用户安装，而且必须安装
+创建python用户，然后以python用户登录系统做如下命令
+]$curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer|bash
+]$ vi  ~/.bash_profile  新增如下几行
+export PATH="/home/python/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+]$ source ~/.bash_profile
+]$ pyenv --help
+Usage: pyenv <command> [<args>]
+Some useful pyenv commands are:
+   commands    List all available pyenv commands  列出可用命令
+   local       Set or show the local application-specific Python version   把python环境绑定到当前目录，常用
+   global      Set or show the global Python version  千万不要使用，否则会影响系统环境
+   shell       Set or show the shell-specific Python version  不建议使用
+   install     Install a Python version using python-build    
+   uninstall   Uninstall a specific Python version
+   rehash      Rehash pyenv shims (run this after installing executables)
+   version     Show the current Python version and its origin
+   versions    List all Python versions available to pyenv
+]$ pyenv help  install  某一个子命令使用这种方式查看帮助
+  -l/--list          List all available versions  表示显示出所有可以安装的包
+]$ pyenv install 3.5.3
+]$ pyenv versions
+* system (set by /home/python/.pyenv/version)   system表示系统默认的版本
+  3.5.3
+]$ mkdir ~/project/project1
+]$ cd ~/project/project1
+]$ pyenv virtualenv 3.5.3  python353
+]$ pyenv versions
+* system (set by /home/python/.pyenv/version)
+  3.5.3
+  3.5.3/envs/python353
+  python353
+]$ pyenv local python353
+(python353) [python@localhost project1]$  注意此时在最前面有一个python353，一退出这个目录就没有了
+project1]$ pip -V   可以从如下路径查看到pip对应的也是当前python353的pip
+pip 9.0.1 from /home/python/.pyenv/versions/3.5.3/envs/python353/lib/python3.5/site-packages (python 3.5)
+project1]$ pip install redis 默认是使用pypi源，但是修改配置文件可以使用其他源，提升速度
+(python353) [python@localhost project1]$ ll /home/python/.pyenv/versions/3.5.3/envs/python353/lib/python3.5/site-packages  安装的包都在该目录下面
+总用量 28
+-rw-rw-r--.  1 python python  126 3月  10 14:48 easy_install.py
+drwxrwxr-x. 11 python python 4096 3月  10 14:48 pip
+drwxrwxr-x.  2 python python 4096 3月  10 14:48 pip-9.0.1.dist-info
+drwxrwxr-x.  5 python python   69 3月  10 14:48 pkg_resources
+drwxrwxr-x.  2 python python   40 3月  10 14:48 __pycache__
+drwxrwxr-x.  3 python python 4096 3月  10 15:32 redis
+drwxrwxr-x.  2 python python 4096 3月  10 15:32 redis-2.10.6.dist-info
+drwxrwxr-x.  5 python python 4096 3月  10 14:48 setuptools
+drwxrwxr-x.  2 python python 4096 3月  10 14:48 setuptools-28.8.0.dist-info
+(python353) [python@localhost project1]$ pip install ipython
+(python353) [python@localhost project1]$ pip install jupyter jupyter实际就是ipython的浏览器端
+(python353) [python@localhost project1]$ jupyter notebook   password  输入一个密码以便后续在浏览器端验证
+(python353) [python@localhost project1]$ jupyter  notebook --ip=0.0.0.0  --no-browser  监听在8888端口，可以通过该端口访问
+(python353) [python@localhost project1]$ pip freeze >/tmp/requirement 把当前项目的包记录在该文件里面
+(python353) [python@localhost project1]$ cat /tmp/requirement  可以查看里面的包
+如果到了另外一个目录，可以执行pip install r /tmp/requirement即可恢复，但是前提是该目录的环境也是3.5.3
+$pyenv update
